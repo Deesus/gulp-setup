@@ -16,7 +16,8 @@ const del   = require('del');
 
 const FILE_PATHS = {
     styles: {
-        src:  [ 'local/**/*.less', '!local/**/_*.less' ],
+        src:  [ path.resolve(__dirname, 'local/**/*.less'), 
+                `!${path.resolve(__dirname, 'local/**/_*.less')}` ], // ignore files that begin with underscore
         dest: path.resolve(__dirname, 'local/assets/styles/')
     },
     scripts: {
