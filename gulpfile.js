@@ -14,17 +14,19 @@ const del   = require('del');
 // define constants:
 // ==================================================
 
-const FILE_PATHS = {
+let FILE_PATHS = {
     styles: {
-        src:  [ path.resolve(__dirname, 'local/**/*.less'), 
-                `!${path.resolve(__dirname, 'local/**/_*.less')}` ], // ignore files that begin with underscore
-        dest: path.resolve(__dirname, 'local/assets/styles/')
+        src:  [ '!local/**/_*.less',  // ignore files that begin with underscore
+                'local/**/*.less'],
+        dest: 'local'
     },
     scripts: {
-        src:  path.resolve(__dirname, 'local/**/*.js'),
-        dest: path.resolve(__dirname, 'local/assets/scripts')
+        src:  'local/**/*.js',
+        dest: 'local'
     }
 };
+
+FILE_PATHS = Object.freeze(FILE_PATHS);
 
 
 // ==================================================
@@ -34,9 +36,9 @@ const FILE_PATHS = {
 /*
  * compiles Less files
  */
-function styles() {
+function compileStyles() {
     return  gulp.src(FILE_PATHS.styles.src)
-            .pipe(less())
+            .pipe(less({javascriptEnabled: true}))
             .pipe(gulp.dest(FILE_PATHS.styles.dest));
 }
 
@@ -57,10 +59,12 @@ function clean() {
 // ==================================================
 
 // assign functions for each task:
-let devBuild = gulp.parallel(styles);
-let prodBuild = gulp.series(clean, styles);
-
 // initialize and assign a cli name: 
-gulp.task('default', devBuild);
-gulp.task('dev-build', devBuild);
-gulp.task('prod-build', prodBuild);
+gulp.task('default',    gulp.parallel(compileStyles));
+gulp.task('dev-build',  gulp.parallel(compileStyles));
+gulp.task('prod-build', gulp.series(clean, compileStyles));
+
+// TODO: make consistent pattern as above
+gulp.task('watch', () => {
+    gulp.watch(FILE_PATHS.styles.src, gulp.series('default'));
+});
