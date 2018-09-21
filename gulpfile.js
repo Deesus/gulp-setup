@@ -14,26 +14,24 @@ const del   = require('del');
 // define constants:
 // ==================================================
 
-let FILE_PATHS = {
+const FILE_PATHS = Object.freeze({
     styles: {
-        src:  [ '!local/**/_*.less',  // ignore files that begin with underscore
-                'local/**/*.less'],
-        dest: 'local'
+        src:  [ '!local/**/_*.less',        // ignore files that begin with underscore
+                'local/**/*.less' ],
+        dest: 'local/assets'
     },
     scripts: {
         src:  'local/**/*.js',
         dest: 'local'
     }
-};
-
-FILE_PATHS = Object.freeze(FILE_PATHS);
+});
 
 
 // ==================================================
 // define functions:
 // ==================================================
 
-/*
+/**
  * compiles Less files
  */
 function compileStyles() {
@@ -42,11 +40,13 @@ function compileStyles() {
             .pipe(gulp.dest(FILE_PATHS.styles.dest));
 }
 
-/*
+/**
  * cleans directory
  */
 function clean() {
-    return  del(['assets'])
+let foldersToClean = ['local/assets', 'local/assets2'];     // TODO: possibly would want folderToClean to be a global constant
+
+    return  del(foldersToClean)
             .then( (paths) => {
                 console.log('Deleted files and folders:');
                 console.log(paths.join('\n'));
@@ -55,16 +55,29 @@ function clean() {
 
 
 // ==================================================
+// define tasks:
+// ==================================================
+
+/**
+ * watches for file changes
+ *
+ * runs default task on change and notifies the files changed
+ */
+function watch() {
+    let watcher = gulp.watch(FILE_PATHS.styles.src,
+                             gulp.series('default'));
+
+    watcher.on('change', (filePath, fileStats) => {
+        console.log(`File ${filePath} was changed.`);
+    });
+}
+
+// ==================================================
 // define Gulp tasks:
 // ==================================================
 
-// assign functions for each task:
-// initialize and assign a cli name: 
+// initialize and assign an alias for each task:
 gulp.task('default',    gulp.parallel(compileStyles));
 gulp.task('dev-build',  gulp.parallel(compileStyles));
 gulp.task('prod-build', gulp.series(clean, compileStyles));
-
-// TODO: make consistent pattern as above
-gulp.task('watch', () => {
-    gulp.watch(FILE_PATHS.styles.src, gulp.series('default'));
-});
+gulp.task('watch',      watch);
