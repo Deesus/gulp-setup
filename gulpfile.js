@@ -16,12 +16,11 @@ const del   = require('del');
 
 const FILE_PATHS = Object.freeze({
     styles: {
-        src:  [ '!local/**/_*.less',        // ignore files that begin with underscore
-                'local/**/*.less' ],
+        src:  ['styles/**/[^_]*.less'],    // ignore files that begin with underscore <https://stackoverflow.com/a/27689389>
         dest: 'local/assets'
     },
     scripts: {
-        src:  'local/**/*.js',
+        src:  ['local/**/*.js'],
         dest: 'local'
     }
 });
@@ -55,7 +54,7 @@ let foldersToClean = ['local/assets', 'local/assets2'];     // TODO: possibly wo
 
 
 // ==================================================
-// define tasks:
+// define task functions:
 // ==================================================
 
 /**
