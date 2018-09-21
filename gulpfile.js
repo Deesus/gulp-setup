@@ -15,13 +15,14 @@ const del   = require('del');
 // ==================================================
 
 const FILE_PATHS = Object.freeze({
-    styles: {
-        src:  ['styles/**/[^_]*.less'],    // ignore files that begin with underscore <https://stackoverflow.com/a/27689389>
-        dest: 'local/assets'
+    STYLES: {
+        SRC_ALL_LESS: 'local/**/*.less',
+        SRC_COMPILABLE_LESS: ['local/**/[^_]*.less'],    // ignore files that begin with underscore <https://stackoverflow.com/a/27689389>
+        DEST: 'local/assets'
     },
-    scripts: {
-        src:  ['local/**/*.js'],
-        dest: 'local'
+    SCRIPTS: {
+        SRC:  ['local/**/*.js'],
+        DEST: 'local'
     }
 });
 
@@ -34,9 +35,9 @@ const FILE_PATHS = Object.freeze({
  * compiles Less files
  */
 function compileStyles() {
-    return  gulp.src(FILE_PATHS.styles.src)
+    return  gulp.src(FILE_PATHS.STYLES.SRC_COMPILABLE_LESS)
             .pipe(less({javascriptEnabled: true}))
-            .pipe(gulp.dest(FILE_PATHS.styles.dest));
+            .pipe(gulp.dest(FILE_PATHS.STYLES.DEST));
 }
 
 /**
@@ -63,7 +64,7 @@ let foldersToClean = ['local/assets', 'local/assets2'];     // TODO: possibly wo
  * runs default task on change and notifies the files changed
  */
 function watch() {
-    let watcher = gulp.watch(FILE_PATHS.styles.src,
+    let watcher = gulp.watch(FILE_PATHS.STYLES.SRC_ALL_LESS,
                              gulp.series('default'));
 
     watcher.on('change', (filePath, fileStats) => {
