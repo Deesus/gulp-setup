@@ -1,4 +1,11 @@
+# IDEs:
 .idea/
+.vs/
+.vscode/
+
+# pacakges:
 node_modules/
+
+# local/temp files:
 local.*
 dist/
