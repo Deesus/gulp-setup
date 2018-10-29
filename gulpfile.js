@@ -1,3 +1,8 @@
+/// <binding ProjectOpened='build, watch' />
+/*
+This file in the main entry point for defining Gulp tasks and using Gulp plugins.
+Click here to learn more. http://go.microsoft.com/fwlink/?LinkId=518007
+*/
 'use strict';
 
 // ==================================================
@@ -16,14 +21,19 @@ const del   = require('del');
 
 const FILE_PATHS = Object.freeze({
     STYLES: {
-        SRC_ALL_LESS: 'local/**/*.less',
-        SRC_COMPILABLE_LESS: ['local/**/[^_]*.less'],    // ignore files that begin with underscore <https://stackoverflow.com/a/27689389>
-        DEST: 'local/assets'
+        // ignore files that begin with underscore <https://stackoverflow.com/a/27689389>:
+        SRC_COMPILABLE_LESS: ['styles/**/[^_]*.less'],
+        SRC_ALL_LESS: 'styles/**/*.less',
+        DEST_LESS: 'dist/styles',
+        // ignore files+folders inside `dist` and `node_modules` folders <https://github.com/gulpjs/gulp/issues/165#issuecomment-32611271>:
+        SRC_ALL_CSS: ['./**/*.css', '!dist/', '!dist/**', '!node_modules/', '!node_modules/**']
     },
     SCRIPTS: {
-        SRC:  ['local/**/*.js'],
-        DEST: 'local'
-    }
+        SRC: ['scripts/**/*.js']
+    },
+    DEST: 'dist',
+    // includes all files and subfolders INSIDE `dist` but not `dist` itself:
+    FOLDERS_TO_CLEAN: ['dist/**/*']
 });
 
 
@@ -34,25 +44,30 @@ const FILE_PATHS = Object.freeze({
 /**
  * compiles Less files
  */
-function compileStyles() {
+function compileLess() {
     return  gulp.src(FILE_PATHS.STYLES.SRC_COMPILABLE_LESS)
             .pipe(less({javascriptEnabled: true}))
-            .pipe(gulp.dest(FILE_PATHS.STYLES.DEST));
+            .pipe(gulp.dest(FILE_PATHS.STYLES.DEST_LESS));
 }
 
 /**
  * cleans directory
  */
 function clean() {
-let foldersToClean = ['local/assets', 'local/assets2'];     // TODO: possibly would want folderToClean to be a global constant
-
-    return  del(foldersToClean)
+    return  del(FILE_PATHS.FOLDERS_TO_CLEAN)
             .then( (paths) => {
                 console.log('Deleted files and folders:');
                 console.log(paths.join('\n'));
             });
 }
 
+/**
+ * copies all CSS files to dist
+ */
+function copyCss() {
+    return gulp.src(FILE_PATHS.STYLES.SRC_ALL_CSS)
+           .pipe(gulp.dest(FILE_PATHS.DEST));
+}
 
 // ==================================================
 // define task functions:
@@ -77,7 +92,6 @@ function watch() {
 // ==================================================
 
 // initialize and assign an alias for each task:
-gulp.task('default',    gulp.parallel(compileStyles));
-gulp.task('dev-build',  gulp.parallel(compileStyles));
-gulp.task('prod-build', gulp.series(clean, compileStyles));
+gulp.task('default',    gulp.series( clean, gulp.parallel(compileLess, copyCss)) );
+gulp.task('build',      gulp.series( clean, gulp.parallel(compileLess, copyCss)) );
 gulp.task('watch',      watch);
